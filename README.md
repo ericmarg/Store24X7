@@ -1,1 +1,2 @@
-# cs97_projects
+# Store24X7
+Code I wrote for the major assignments of Harvard's CSCI-E97 course. The assignment was to design and code an autonomous store system, a blockchain ledger service to keep track of transactions, and an authentication service. The assignments were created by Prof. Eric Gieseke, and the concept was his idea. The code and design documents were written by me except where credited otherwise.

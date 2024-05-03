@@ -1,0 +1,195 @@
+#***********************************************
+# name       :  eric margolis
+# file       :  exceptions.script
+# assignment :  4
+# notes      :  authentication service exception testing
+# Compile using: javac com/cscie97/store/controller/*.java com/cscie97/store/test/*.java com/cscie97/store/model/*.java com/cscie97/ledger/*.java com/cscie97/store/authentication/*.java
+# Run using: java -cp . com.cscie97.store.test.TestDriver exceptions.script
+#***********************************************
+
+# define a store
+define-store store1 name walmart address "123 elm st. san luis, ca"
+
+# Create administrative resource role for store1
+create_resource_role store1_admin_role roleID admin_role resourceID store1
+
+# Add resource role to admin user
+add_resource_role_to_user admin store1_admin_role
+
+
+#
+# Provision the store
+#
+
+# define an aisle within the store
+define-aisle store1:1 name aisle1 description bakery location floor
+define-aisle store1:2 name aisle2 description produce location floor
+define-aisle store1:3 name aisle3 description electronics location floor
+
+# define a new shelf within the store
+define-shelf store1:1:1 name bread level medium description bakery temperature ambient
+define-shelf store1:2:1 name kale level high description produce temperature refrigerated
+define-shelf store1:3:1 name batteries level medium description electronics temperature ambient
+
+# show the details of a store and shelves; expect to see one store with three aisles and three shelves
+show-store store1
+show-shelf store1:1:1
+show-shelf store1:2:1
+show-shelf store1:3:1
+
+# define new products
+define-product bread1 name wheat bread description "whole wheat bread" size 16 category bakery unit_price 2 temperature ambient
+define-product apple1 name gala apple description "organic apples" size 5 category produce unit_price 1 temperature refrigerated
+
+# show the details of the product; expect to see two products
+show-product bread1
+show-product apple1
+
+# define new inventory items within the store
+define-inventory inv1 location store1:1:1 capacity 30 count 14 product bread1
+define-inventory inv2 location store1:1:2 capacity 40 count 30 product apple1
+
+# show the details of the inventory; expect to see two inventories
+show-inventory inv1
+show-inventory inv2
+
+# define 10 customers (7 registered, 10 who have 1000 units transferred from the master account = 10 transactions now)
+# Expect to see ledger transactions and confirmation that an AuthenticationService User object was created
+define-customer cust1 first_name lisa last_name murray isRegistered true isAdult true email_address lmurray@gmail.com account lisa01
+define-customer cust2 first_name danny last_name smith isRegistered true isAdult false email_address dsmith@yahoo.com account danny01
+define-customer cust3 first_name sarah last_name miller isRegistered false isAdult true email_address smiller@gmail.com account sarah01
+define-customer cust4 first_name bobby last_name robinson isRegistered true isAdult true email_address brobinson@gmail.com account bobby01
+define-customer cust5 first_name lucas last_name hall isRegistered true isAdult false email_address lhall@yahoo.com account lucas01
+define-customer ejackson first_name emily last_name jackson isRegistered false isAdult true email_address ejackson@gmail.com account emily01
+define-customer cust7 first_name tom last_name white isRegistered true isAdult true email_address twhite@gmail.com account tom01
+define-customer cust8 first_name olivia last_name brown isRegistered true isAdult false email_address obrown@yahoo.com account olivia01
+define-customer cust9 first_name max last_name lewis isRegistered false isAdult true email_address mlewis@gmail.com account max01
+define-customer cust10 first_name mia last_name clark isRegistered true isAdult true email_address mclark@gmail.com account mia01
+define-customer jimmy first_name Jimmy last_name Jones isRegistered true isAdult false email_address liljimmy@yahoo.com account littlejimmy
+
+# define device of type camera, robot, speakers, microphones, and turnstile
+define-device camera001 name front_door_camera type camera location store1:1
+define-device camera002 name right_end_camera type camera location store1:2
+define-device robot001 name r2d2 type robot location store1:1
+define-device robot002 name r2d3 type robot location store1:2
+define-device robot003 name r2d4 type robot location store1:2
+define-device robot004 name c3p0 type robot location store1:1
+define-device robot005 name c4p0 type robot location store1:3
+define-device robot006 name c3p1 type robot location store1:3
+define-device turnstile001 name neocashier1 type turnstile location store1:1
+define-device turnstile002 name neocashier2 type turnstile location store1:2
+define-device microphone001 name mike type microphone location store1:1
+define-device speaker001 name middle-aisle-speaker type speaker location store1:1
+define-device speaker002 name middle-aisle-speaker type speaker location store1:2
+define-device speaker003 name middle-aisle-speaker type speaker location store1:3
+
+# show sensor details using its unique id; Expect to see that the sensors were defined correctly
+show-device camera001 storelocation store1
+show-device robot001 storelocation store1
+show-device robot002 storelocation store1
+show-device robot003 storelocation store1
+show-device turnstile001 storelocation store1
+show-device turnstile002 storelocation store1
+show-device microphone001 storelocation store1
+show-device camera002 storelocation store1
+show-device speaker001 storelocation store1
+show-device speaker002 storelocation store1
+
+#
+#
+#
+# Athentication Service Commands
+#
+# 
+
+# define permissions
+# define_permission <permission_id> name <permission_name> description <permission_description>
+define_permission user_admin name “User Administrator” description “Create, Update, Delete Users”
+define_permission control_robot name “Control Robot” description “Full Control of Robots”
+define_permission control_speaker name “Control Speaker” description “Full Control of Speaker”
+define_permission control_turnstile name “Control Turnstile” description “Full Control of Turnstile”
+define_permission enter_store name "Enter Store" description "Enter the store through turnstile"
+define_permission checkout name "Checkout" description "Automatically checkout and exit through turnstile"
+
+# define roles
+# define_role <role_id> name <role_name> description <role_description>
+define_role adult_consumer name “Adult Consumer Role” description “Has all permissions of an adult consumer”
+define_role child_consumer name “Child Consumer Role” description “Has all permissions of a child consumer”
+define_role guest name “Guest Role” description “Has all permissions of a guest”
+define_role admin_role name “Admin Role” description “Has all permissions of an administrator”
+
+# add permission (permission, role ) to role
+# add_permission_to_role <role_id> <permission_id>
+add_permission_to_role admin_role user_admin
+add_permission_to_role admin_role control_robot
+add_permission_to_role admin_role control_speaker
+add_permission_to_role admin_role control_turnstile
+add_permission_to_role adult_consumer control_robot
+add_permission_to_role adult_consumer enter_store
+add_permission_to_role adult_consumer checkout
+add_permission_to_role child_consumer enter_store
+add_permission_to_role child_consumer checkout
+add_permission_to_role guest enter_store
+
+
+# create_user
+# create_user <user_id> name <user_name>
+create_user sam name “Sam Davis”
+create_user debra name “Debra Smart”
+
+
+# add_user_credential
+# add_user_credential <user_id> type <voice_print|face_print|password> value <value>
+add_user_credential sam type voice_print value --voice:sam--
+add_user_credential jimmy type face_print value --face:jimmy--
+add_user_credential jimmy type voice_print value --voice:jimmy--
+add_user_credential debra type password value secret
+add_user_credential cust1 type voice_print value --voice:lisa--
+add_user_credential cust1 type face_print value --face:lisa--
+add_user_credential cust2 type voice_print value --voice:danny--
+add_user_credential cust2 type face_print value --face:danny--
+add_user_credential cust3 type voice_print value --voice:sarah--
+add_user_credential cust3 type face_print value --face:sarah--
+
+# add role to user
+# add_role_to_user <user_id> <roleID>
+add_role_to_user debra admin_role
+
+
+# create resource role
+# create_resource_role <resource_role_name> roleID <roleID> resourceID <resourceID>
+create_resource_role store1_child_consumer roleID child_consumer resourceID store1
+create_resource_role store1_adult_consumer roleID adult_consumer resourceID store1
+# Update admin resource role to include new role permissions
+create_resource_role store1_admin_role roleID admin_role resourceID store1
+
+# add resource role to user
+# add_resource_role_to_user <user_id> <resource_role>
+add_resource_role_to_user sam store1_adult_consumer
+add_resource_role_to_user jimmy store1_child_consumer
+add_resource_role_to_user cust1 store1_adult_consumer
+add_resource_role_to_user cust2 store1_adult_consumer
+add_resource_role_to_user cust3 store1_adult_consumer
+add_resource_role_to_user admin store1_admin_role
+
+#
+#
+#
+# Exception handling (auth service)
+#
+#
+# Little Jimmy tells a robot to fetch some bread - expect access denied message because children can't control robots
+create-event microphone001 store-location store1 event "fetch-product jimmy store1:1 bread1 inv1 store1:1:1 3 --voice:jimmy--"
+
+# A user without any credentials tries to enter the store - expect authentication failed message
+create-event turnstile001 store-location store1 event "enter-store samuel sam samadams store1:1 --face:sam--"
+
+# An unregistered guest tries to checkout - expect access denied message
+create-event turnstile001 store-location store1 event "checkout ejackson ejack24 emily --face:emily--"
+
+# Check a user in and then out to invalidate their access token - expect success
+create-event turnstile001 store-location store1 event "enter-store cust1 lisa lisa01 store1:1 --face:lisa--"
+create-event turnstile001 store-location store1 event "checkout cust1 lisa01 lisa --face:lisa--"
+
+# Then create a fetch event for that user - expect failure because their token has been invalidated.
+create-event microphone001 store-location store1 event "fetch-product cust1 store1:1 bread1 inv1 store1:1:1 3 --voice:lisa--"
